@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>CustomerApi</name>
+    </assembly>
+    <members>
+        <member name="M:CustomerApi.Controllers.AuthController.CreateTokenAsync(CustomerApi.Contracts.Requests.LoginRequest,System.Threading.CancellationToken)">
+            <summary>
+            Issues a JWT for one of the mock local users.
+            </summary>
+        </member>
+        <member name="M:CustomerApi.Controllers.CustomersController.GetAllAsync(System.Threading.CancellationToken)">
+            <summary>
+            Returns the complete mock-backed customer list.
+            </summary>
+        </member>
+        <member name="M:CustomerApi.Controllers.CustomersController.GetByIdAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Returns one customer by identifier.
+            </summary>
+        </member>
+        <member name="M:CustomerApi.Controllers.CustomersController.CreateAsync(CustomerApi.Contracts.Requests.CreateCustomerRequest,System.Threading.CancellationToken)">
+            <summary>
+            Creates a new customer record.
+            </summary>
+        </member>
+        <member name="M:CustomerApi.Controllers.CustomersController.UpdateAsync(System.Guid,CustomerApi.Contracts.Requests.UpdateCustomerRequest,System.Threading.CancellationToken)">
+            <summary>
+            Updates an existing customer record.
+            </summary>
+        </member>
+        <member name="M:CustomerApi.Controllers.CustomersController.DeleteAsync(System.Guid,System.Threading.CancellationToken)">
+            <summary>
+            Deletes a customer record.
+            </summary>
+        </member>
+    </members>
+</doc>
