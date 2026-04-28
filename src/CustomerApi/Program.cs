@@ -1,11 +1,13 @@
 using System.Reflection;
 using System.Text;
 using System.Threading.RateLimiting;
+using CustomerApi.Data;
 using CustomerApi.Middleware;
 using CustomerApi.Repositories;
 using CustomerApi.Security;
 using CustomerApi.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -23,6 +25,12 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHealthChecks();
+
+var connectionString = builder.Configuration.GetConnectionString("CustomerDatabase")
+    ?? "Data Source=customer-api.db";
+
+builder.Services.AddDbContext<CustomerDbContext>(options =>
+    options.UseSqlite(connectionString));
 
 builder.Services.AddOptions<JwtOptions>()
     .Bind(builder.Configuration.GetSection(JwtOptions.SectionName))
@@ -71,7 +79,7 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-builder.Services.AddSingleton<ICustomerRepository, InMemoryCustomerRepository>();
+builder.Services.AddScoped<ICustomerRepository, SqliteCustomerRepository>();
 builder.Services.AddScoped<ICustomerService, CustomerService>();
 builder.Services.AddSingleton<IAuthService, AuthService>();
 builder.Services.AddSingleton<ITokenService, JwtTokenService>();
@@ -119,6 +127,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
+    await DbInitializer.InitializeAsync(dbContext);
+}
 
 app.UseExceptionHandler();
 app.UseRateLimiter();

@@ -3,15 +3,17 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using CustomerApi.Contracts.Requests;
 using CustomerApi.Contracts.Responses;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Configuration;
 
 namespace CustomerApi.Tests.Integration;
 
-public sealed class CustomersApiTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class CustomersApiTests : IClassFixture<CustomWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public CustomersApiTests(WebApplicationFactory<Program> factory)
+    public CustomersApiTests(CustomWebApplicationFactory factory)
     {
         _client = factory.CreateClient(new WebApplicationFactoryClientOptions
         {
@@ -69,5 +71,32 @@ public sealed class CustomersApiTests : IClassFixture<WebApplicationFactory<Prog
         var customers = await response.Content.ReadFromJsonAsync<List<CustomerResponse>>(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         Assert.NotNull(customers);
         Assert.True(customers.Count >= 3);
+    }
+}
+
+public sealed class CustomWebApplicationFactory : WebApplicationFactory<Program>, IDisposable
+{
+    private readonly string _databasePath = Path.Combine(Path.GetTempPath(), $"customer-api-tests-{Guid.NewGuid():N}.db");
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseEnvironment("Development");
+        builder.ConfigureAppConfiguration((_, configurationBuilder) =>
+        {
+            configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:CustomerDatabase"] = $"Data Source={_databasePath}"
+            });
+        });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+
+        if (disposing && File.Exists(_databasePath))
+        {
+            File.Delete(_databasePath);
+        }
     }
 }
