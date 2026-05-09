@@ -85,6 +85,8 @@ Content-Type: application/json
 
 ### Create an API key (Admin JWT required)
 
+API keys are always read-only — no `roles` field is needed.
+
 ```http
 POST http://localhost:5100/api/apikeys
 Authorization: Bearer {jwt_token}
@@ -92,7 +94,6 @@ Content-Type: application/json
 
 {
   "name": "Mobile App",
-  "roles": ["Admin"],
   "expiresAtUtc": null
 }
 ```
@@ -173,9 +174,7 @@ Response:
 
 **1b. Create the API key**
 
-Choose roles based on what access the application needs:
-- `"Admin"` — full read/write/delete access
-- `"Support"` — read-only access
+API keys are always read-only — they receive the `Support` role automatically, which grants access to `GET /api/customers` and `GET /api/customers/{id}` only. Write operations (POST, PUT, DELETE) are not permitted.
 
 ```http
 POST http://localhost:5100/api/apikeys
@@ -184,7 +183,6 @@ Content-Type: application/json
 
 {
   "name": "My Integration App",
-  "roles": ["Admin"],
   "expiresAtUtc": null
 }
 ```
@@ -346,6 +344,7 @@ After revoking, create a new key and update the secret in your application's env
 
 ### Key limitations
 
+- API keys are **read-only** — they carry the `Support` role and can only call `GET /api/customers` and `GET /api/customers/{id}`. POST, PUT, and DELETE customer endpoints always require a JWT.
 - API keys **cannot** call `POST/GET/DELETE /api/apikeys` — key management always requires an Admin JWT to prevent privilege escalation.
 - Rate limit: **100 requests per minute** per API key prefix. Exceeding this returns `429`.
 - If `expiresAtUtc` was set during creation, the key stops working after that date and returns `401`.

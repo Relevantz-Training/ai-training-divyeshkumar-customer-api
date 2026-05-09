@@ -10,15 +10,14 @@ namespace CustomerApi.Services;
 
 public sealed class ApiKeyService(CustomerDbContext dbContext) : IApiKeyService
 {
+    // API keys are always read-only — they receive the Support role which grants GET access only.
+    private const string ApiKeyRole = "Support";
+
     public async Task<CreateApiKeyResponse> CreateAsync(CreateApiKeyRequest request, CancellationToken cancellationToken)
     {
         var rawKey = ApiKeyAuthenticationHandler.GenerateRawKey();
         var prefix = rawKey[..8];
         var hash = ApiKeyAuthenticationHandler.ComputeHash(rawKey);
-        var roles = string.Join(",", request.Roles
-            .Select(r => r.Trim())
-            .Where(r => r.Length > 0)
-            .Distinct(StringComparer.OrdinalIgnoreCase));
 
         var entity = new ApiKey
         {
@@ -26,7 +25,7 @@ public sealed class ApiKeyService(CustomerDbContext dbContext) : IApiKeyService
             Name = request.Name.Trim(),
             KeyPrefix = prefix,
             KeyHash = hash,
-            Roles = roles,
+            Roles = ApiKeyRole,
             IsActive = true,
             CreatedAtUtc = DateTimeOffset.UtcNow,
             ExpiresAtUtc = request.ExpiresAtUtc
@@ -39,7 +38,7 @@ public sealed class ApiKeyService(CustomerDbContext dbContext) : IApiKeyService
             entity.Id,
             entity.Name,
             entity.KeyPrefix,
-            roles.Split(',', StringSplitOptions.RemoveEmptyEntries),
+            [ApiKeyRole],
             entity.IsActive,
             entity.CreatedAtUtc,
             entity.ExpiresAtUtc,

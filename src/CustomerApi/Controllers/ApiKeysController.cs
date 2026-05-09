@@ -15,7 +15,8 @@ namespace CustomerApi.Controllers;
 public sealed class ApiKeysController(IApiKeyService apiKeyService) : ControllerBase
 {
     /// <summary>
-    /// Creates a new API key. The raw key is returned once and never stored — save it immediately.
+    /// Creates a new API key. Keys are read-only (Support role) and can only call GET /api/customers endpoints.
+    /// The raw key is returned once and never stored — save it immediately.
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(CreateApiKeyResponse), StatusCodes.Status201Created)]
